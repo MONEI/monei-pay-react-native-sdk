@@ -1,0 +1,11 @@
+node_modules/
+build/
+*.iml
+.gradle
+.idea
+.DS_Store
+android/build/
+ios/Pods/
+*.xcworkspace
+*.xcuserdata
+package-lock.json

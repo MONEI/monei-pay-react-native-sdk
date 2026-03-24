@@ -1,0 +1,38 @@
+{
+  "name": "@monei-pay/react-native",
+  "version": "0.1.0",
+  "description": "React Native SDK for accepting NFC payments via MONEI Pay",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "build": "expo-module build",
+    "clean": "expo-module clean",
+    "test": "expo-module test",
+    "prepare": "expo-module prepare",
+    "prepublishOnly": "expo-module prepublishOnly"
+  },
+  "keywords": [
+    "expo",
+    "expo-module",
+    "react-native",
+    "monei",
+    "nfc",
+    "payments",
+    "tap-to-pay"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MONEI/monei-pay-react-native-sdk.git"
+  },
+  "author": "MONEI",
+  "license": "MIT",
+  "homepage": "https://github.com/MONEI/monei-pay-react-native-sdk#readme",
+  "devDependencies": {
+    "expo-module-scripts": "^4.0.0"
+  },
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  }
+}

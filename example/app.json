@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "monei-pay-example",
+    "slug": "monei-pay-example",
+    "version": "1.0.0",
+    "scheme": "monei-pay-example",
+    "ios": {
+      "bundleIdentifier": "com.monei.pay.example",
+      "infoPlist": {
+        "LSApplicationQueriesSchemes": ["monei-pay"]
+      }
+    },
+    "android": {
+      "package": "com.monei.pay.example"
+    }
+  }
+}

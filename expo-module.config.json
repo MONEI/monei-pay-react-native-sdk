@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["MoneiPayModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.moneipay.MoneiPayModule"]
+  }
+}
