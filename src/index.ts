@@ -1,7 +1,12 @@
-import { requireNativeModule, Platform } from 'expo-modules-core';
+import { requireNativeModule, Platform } from "expo-modules-core";
 
-export type { AcceptPaymentParams, PaymentResult, MoneiPayErrorCode } from './MoneiPay.types';
-import type { AcceptPaymentParams, PaymentResult } from './MoneiPay.types';
+import type { AcceptPaymentParams, PaymentResult } from "./MoneiPay.types";
+
+export type {
+  AcceptPaymentParams,
+  PaymentResult,
+  MoneiPayErrorCode,
+} from "./MoneiPay.types";
 
 interface MoneiPayNativeModule {
   acceptPayment(params: Record<string, unknown>): Promise<PaymentResult>;
@@ -9,7 +14,7 @@ interface MoneiPayNativeModule {
   cancelPendingPayment(): void;
 }
 
-const NativeModule = requireNativeModule<MoneiPayNativeModule>('MoneiPay');
+const NativeModule = requireNativeModule<MoneiPayNativeModule>("MoneiPay");
 
 /**
  * Accept an NFC payment via MONEI Pay.
@@ -21,15 +26,17 @@ const NativeModule = requireNativeModule<MoneiPayNativeModule>('MoneiPay');
  * @returns Payment result with transaction details.
  * @throws Error with code from `MoneiPayErrorCode`.
  */
-export async function acceptPayment(params: AcceptPaymentParams): Promise<PaymentResult> {
+export async function acceptPayment(
+  params: AcceptPaymentParams
+): Promise<PaymentResult> {
   if (!params.token) {
-    throw new Error('token is required');
+    throw new Error("token is required");
   }
   if (!params.amount || params.amount <= 0) {
-    throw new Error('amount must be a positive number');
+    throw new Error("amount must be a positive number");
   }
-  if (Platform.OS === 'ios' && !params.callbackScheme) {
-    throw new Error('callbackScheme is required on iOS');
+  if (Platform.OS === "ios" && !params.callbackScheme) {
+    throw new Error("callbackScheme is required on iOS");
   }
 
   return NativeModule.acceptPayment({
@@ -40,7 +47,7 @@ export async function acceptPayment(params: AcceptPaymentParams): Promise<Paymen
     customerEmail: params.customerEmail,
     customerPhone: params.customerPhone,
     callbackScheme: params.callbackScheme,
-    mode: params.mode ?? 'direct',
+    mode: params.mode ?? "direct",
   });
 }
 

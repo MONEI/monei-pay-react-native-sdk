@@ -5,6 +5,7 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
+    "lint": "expo-module lint",
     "build": "expo-module build",
     "clean": "expo-module clean",
     "test": "expo-module test --passWithNoTests",
@@ -33,7 +34,7 @@
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
     "@release-it/conventional-changelog": "^10.0.6",
-    "expo-module-scripts": "^4.0.0",
+    "expo-module-scripts": "^55.0.2",
     "release-it": "^19.2.4"
   },
   "peerDependencies": {

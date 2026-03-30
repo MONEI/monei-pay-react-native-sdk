@@ -23,7 +23,7 @@ export interface AcceptPaymentParams {
    * Android payment mode: 'direct' (CloudCommerce) or 'via-monei-pay' (MONEI Pay intent).
    * Default: 'direct'. Ignored on iOS.
    */
-  mode?: 'direct' | 'via-monei-pay';
+  mode?: "direct" | "via-monei-pay";
 }
 
 /**
@@ -46,12 +46,12 @@ export interface PaymentResult {
  * Error codes thrown by the SDK.
  */
 export type MoneiPayErrorCode =
-  | 'NOT_INSTALLED'
-  | 'PAYMENT_IN_PROGRESS'
-  | 'PAYMENT_FAILED'
-  | 'PAYMENT_TIMEOUT'
-  | 'CANCELLED'
-  | 'INVALID_PARAMS'
-  | 'INVALID_TOKEN'
-  | 'NO_ACTIVITY'
-  | 'FAILED_TO_OPEN';
+  | "NOT_INSTALLED"
+  | "PAYMENT_IN_PROGRESS"
+  | "PAYMENT_FAILED"
+  | "PAYMENT_TIMEOUT"
+  | "CANCELLED"
+  | "INVALID_PARAMS"
+  | "INVALID_TOKEN"
+  | "NO_ACTIVITY"
+  | "FAILED_TO_OPEN";
