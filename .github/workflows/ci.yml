@@ -2,26 +2,29 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: "24"
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build TypeScript
-        run: npx expo-module build
+        run: pnpm exec expo-module build
 
       - name: Verify build output
-        run: test -f build/index.js && test -f build/index.d.js || test -f build/index.d.ts
+        run: test -f build/index.js && test -f build/index.d.ts

@@ -17,12 +17,12 @@ Built as an Expo module — works with both Expo and bare React Native projects.
 npx expo install @monei-pay/react-native
 ```
 
-Or with npm/yarn:
+Or with npm/pnpm:
 
 ```bash
 npm install @monei-pay/react-native
 # or
-yarn add @monei-pay/react-native
+pnpm add @monei-pay/react-native
 ```
 
 ### iOS Setup
