@@ -5,7 +5,6 @@ public class MoneiPayModule: Module {
   private static let moneiPayScheme = "monei-pay"
 
   private var pendingPromise: Promise?
-  private var paymentStartDate: Date?
 
   public func definition() -> ModuleDefinition {
     Name("MoneiPay")
@@ -69,7 +68,6 @@ public class MoneiPayModule: Module {
         }
 
         self.pendingPromise = promise
-        self.paymentStartDate = Date()
 
         UIApplication.shared.open(url) { success in
           if !success {
@@ -121,7 +119,6 @@ public class MoneiPayModule: Module {
 
       self.pendingPromise?.resolve(result)
       self.pendingPromise = nil
-      self.paymentStartDate = nil
       return true
     }
 
@@ -133,6 +130,5 @@ public class MoneiPayModule: Module {
   private func rejectPending(code: String, message: String) {
     pendingPromise?.reject(code, message)
     pendingPromise = nil
-    paymentStartDate = nil
   }
 }

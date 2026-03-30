@@ -138,9 +138,13 @@ class MoneiPayModule : Module() {
       return
     }
 
-    // Check expiry
+    // Check expiry — reject tokens with missing or expired exp claim
     val exp = claims.optLong("exp", 0)
-    if (exp > 0 && exp < (System.currentTimeMillis() / 1000) + 300) {
+    if (exp == 0L) {
+      rejectPending("INVALID_TOKEN", "Token missing exp claim")
+      return
+    }
+    if (exp < (System.currentTimeMillis() / 1000) + 300) {
       rejectPending("INVALID_TOKEN", "Token expired")
       return
     }
