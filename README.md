@@ -13,16 +13,17 @@ Built as an Expo module — works with both Expo and bare React Native projects.
 
 ## Installation
 
+The package is on npm: [@monei-js/monei-pay-react-native-sdk](https://www.npmjs.com/package/@monei-js/monei-pay-react-native-sdk).
+
 ```bash
-npx expo install @monei-pay/react-native
+npx expo install @monei-js/monei-pay-react-native-sdk
 ```
 
-Or with npm/pnpm:
+Or with npm or pnpm:
 
 ```bash
-npm install @monei-pay/react-native
-# or
-pnpm add @monei-pay/react-native
+npm install @monei-js/monei-pay-react-native-sdk
+pnpm add @monei-js/monei-pay-react-native-sdk
 ```
 
 ### iOS Setup
@@ -51,7 +52,7 @@ No additional setup needed — the SDK's AndroidManifest includes the required `
 ```tsx
 import { useEffect } from 'react';
 import { Linking, Platform } from 'react-native';
-import * as MoneiPay from '@monei-pay/react-native';
+import * as MoneiPay from '@monei-js/monei-pay-react-native-sdk';
 
 function PaymentScreen() {
   // Wire URL callback handler (iOS only)
