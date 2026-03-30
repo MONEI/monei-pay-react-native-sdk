@@ -7,6 +7,10 @@
             <action android:name="com.monei.pay.ACCEPT_PAYMENT" />
         </intent>
         <package android:name="com.mastercard.cpos" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="cloud_payment" />
+        </intent>
     </queries>
 
 </manifest>
