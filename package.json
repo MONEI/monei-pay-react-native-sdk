@@ -1,5 +1,5 @@
 {
-  "name": "@monei-pay/react-native",
+  "name": "@monei-js/monei-pay-react-native-sdk",
   "version": "0.2.0",
   "description": "React Native SDK for accepting NFC payments via MONEI Pay",
   "main": "build/index.js",
