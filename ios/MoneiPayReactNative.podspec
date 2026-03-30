@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name           = 'MoneiPayReactNative'
-  s.version        = '0.1.0'
+  s.version        = '0.2.0'
   s.summary        = 'React Native SDK for MONEI Pay NFC payments'
   s.description    = 'Accept NFC tap-to-pay payments in your React Native app via MONEI Pay'
   s.homepage       = 'https://github.com/MONEI/monei-pay-react-native-sdk'

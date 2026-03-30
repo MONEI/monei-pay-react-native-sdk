@@ -21,7 +21,7 @@ class MoneiPayModule : Module() {
     private const val REQUEST_CODE_DIRECT = 10002
     private const val MONEI_PAY_ACTION = "com.monei.pay.ACCEPT_PAYMENT"
     private const val CLOUD_COMMERCE_PACKAGE = "com.mastercard.cpos"
-    private const val SDK_VERSION = "0.1.0"
+    private const val SDK_VERSION = "0.2.0"
   }
 
   private var pendingPromise: Promise? = null
