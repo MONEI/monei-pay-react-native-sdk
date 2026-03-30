@@ -136,6 +136,25 @@ Cancel any pending payment.
 | `INVALID_TOKEN` | Auth token expired or invalid |
 | `PAYMENT_TIMEOUT` | Callback not received in time (iOS) |
 
+## Example App
+
+The [`example/`](example/) directory contains a merchant demo app that demonstrates the full payment flow:
+
+1. Enter your MONEI API key
+2. Fetch a POS auth token
+3. Enter an amount and accept an NFC payment
+4. View the payment result
+
+To run:
+
+```bash
+cd example
+npm install
+npx expo run:ios    # or npx expo run:android
+```
+
+> Requires a physical device — NFC is not available in simulators/emulators.
+
 ## Token Generation
 
 Your backend generates POS auth tokens via the MONEI API:
