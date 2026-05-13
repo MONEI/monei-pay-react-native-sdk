@@ -166,6 +166,18 @@ curl -X POST https://api.monei.com/v1/pos/auth-token \
   -H "Content-Type: application/json"
 ```
 
+**Partner / master account integrations:** use your master account API key, set the sub-account ID via `MONEI-Account-ID`, and **identify yourself with a partner `User-Agent`** (`MONEI/<PARTNER_NAME>/<VERSION>`). A custom `User-Agent` is required whenever `MONEI-Account-ID` is set.
+
+```bash
+curl -X POST https://api.monei.com/v1/pos/auth-token \
+  -H "Authorization: pk_live_MASTER_KEY" \
+  -H "MONEI-Account-ID: SUB_ACCOUNT_ID" \
+  -H "User-Agent: MONEI/MyPartner/0.1.0" \
+  -H "Content-Type: application/json"
+```
+
+See [docs.monei.com/monei-connect](https://docs.monei.com/monei-connect) for details.
+
 See the [MONEI API docs](https://docs.monei.com) for details.
 
 ## License

@@ -16,8 +16,12 @@ import * as MoneiPay from '@monei-pay/react-native';
 
 type PaymentMode = 'direct' | 'via-monei-pay';
 
+const DEFAULT_USER_AGENT = 'MONEI/MerchantDemoRN/0.2.1';
+
 export default function App() {
   const [apiKey, setApiKey] = useState('');
+  const [accountId, setAccountId] = useState('');
+  const [userAgent, setUserAgent] = useState('');
   const [posId, setPosId] = useState('');
   const [authToken, setAuthToken] = useState('');
   const [amountText, setAmountText] = useState('');
@@ -39,6 +43,12 @@ export default function App() {
 
   const fetchToken = async () => {
     setError(null);
+
+    if (accountId.trim() && !userAgent.trim()) {
+      setError('User-Agent must be provided when using Account ID');
+      return;
+    }
+
     setIsFetchingToken(true);
 
     try {
@@ -47,12 +57,18 @@ export default function App() {
         body.pointOfSaleId = posId.trim();
       }
 
+      const headers: Record<string, string> = {
+        Authorization: apiKey.trim(),
+        'Content-Type': 'application/json',
+        'User-Agent': userAgent.trim() || DEFAULT_USER_AGENT,
+      };
+      if (accountId.trim()) {
+        headers['MONEI-Account-ID'] = accountId.trim();
+      }
+
       const response = await fetch('https://api.monei.com/v1/pos/auth-token', {
         method: 'POST',
-        headers: {
-          Authorization: apiKey.trim(),
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(body),
       });
 
@@ -121,6 +137,22 @@ export default function App() {
           placeholder="MONEI API Key"
           value={apiKey}
           onChangeText={setApiKey}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="MONEI Account ID (optional, partner integrations)"
+          value={accountId}
+          onChangeText={setAccountId}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="User-Agent (e.g. MONEI/MyPartner/0.1.0)"
+          value={userAgent}
+          onChangeText={setUserAgent}
           autoCapitalize="none"
           autoCorrect={false}
         />
