@@ -21,7 +21,12 @@ class MoneiPayModule : Module() {
     private const val REQUEST_CODE_DIRECT = 10002
     private const val MONEI_PAY_ACTION = "com.monei.pay.ACCEPT_PAYMENT"
     private const val CLOUD_COMMERCE_PACKAGE = "com.mastercard.cpos"
-    private const val SDK_VERSION = "0.2.0"
+    private const val SDK_VERSION = "1.0.0"
+
+    // Must mirror lib/deep-link-utils.ts isValidCallbackUrl — keep in sync.
+    internal fun isValidCallbackUrl(url: String): Boolean {
+      return url.startsWith("https://") && url.length <= 2048
+    }
   }
 
   private var pendingPromise: Promise? = null
@@ -58,21 +63,27 @@ class MoneiPayModule : Module() {
       val customerName = params["customerName"] as? String
       val customerEmail = params["customerEmail"] as? String
       val customerPhone = params["customerPhone"] as? String
+      val callbackUrl = (params["callbackUrl"] as? String)?.takeIf { it.isNotEmpty() }
+
+      if (callbackUrl != null && !isValidCallbackUrl(callbackUrl)) {
+        promise.reject("INVALID_CALLBACK_URL", "callbackUrl must be https and <= 2048 chars", null)
+        return@AsyncFunction
+      }
 
       pendingPromise = promise
       pendingAmount = amount
 
       when (mode) {
         "via-monei-pay" -> launchMoneiPay(
-          activity, token, amount, description, customerName, customerEmail, customerPhone
+          activity, token, amount, description, customerName, customerEmail, customerPhone, callbackUrl
         )
         else -> launchDirect(
-          activity, token, amount, description, customerName, customerEmail, customerPhone
+          activity, token, amount, description, customerName, customerEmail, customerPhone, callbackUrl
         )
       }
     }
 
-    Function("handleCallback") { urlString: String ->
+    Function("handleCompleteRedirect") { urlString: String ->
       // iOS-only — no-op on Android, returns false
       false
     }
@@ -96,7 +107,8 @@ class MoneiPayModule : Module() {
     description: String?,
     customerName: String?,
     customerEmail: String?,
-    customerPhone: String?
+    customerPhone: String?,
+    callbackUrl: String?
   ) {
     val intent = Intent(MONEI_PAY_ACTION).apply {
       putExtra("amount_cents", amount)
@@ -105,6 +117,7 @@ class MoneiPayModule : Module() {
       if (!customerName.isNullOrEmpty()) putExtra("customer_name", customerName)
       if (!customerEmail.isNullOrEmpty()) putExtra("customer_email", customerEmail)
       if (!customerPhone.isNullOrEmpty()) putExtra("customer_phone", customerPhone)
+      if (!callbackUrl.isNullOrEmpty()) putExtra("callback_url", callbackUrl)
     }
 
     if (!isActivityResolvable(activity, intent)) {
@@ -123,7 +136,8 @@ class MoneiPayModule : Module() {
     description: String?,
     customerName: String?,
     customerEmail: String?,
-    customerPhone: String?
+    customerPhone: String?,
+    callbackUrl: String?
   ) {
     // Decode JWT for merchant metadata
     val claims = decodeJwt(token)
@@ -173,6 +187,7 @@ class MoneiPayModule : Module() {
       if (!customerName.isNullOrEmpty()) put("customerName", customerName)
       if (!customerEmail.isNullOrEmpty()) put("customerEmail", customerEmail)
       if (!customerPhone.isNullOrEmpty()) put("customerPhone", customerPhone)
+      if (!callbackUrl.isNullOrEmpty()) put("callbackUrl", callbackUrl)
     }
 
     val payload = JSONObject().apply {
@@ -224,7 +239,13 @@ class MoneiPayModule : Module() {
       val errorMessage = data.getStringExtra("error_message") ?: errorCode
       val code = when (errorCode) {
         "USER_DENIED", "CANCELLED", "USER_CANCELLED" -> "CANCELLED"
-        "TOKEN_EXPIRED", "NOT_AUTHENTICATED", "INVALID_TOKEN" -> "INVALID_TOKEN"
+        "TOKEN_EXPIRED" -> "TOKEN_EXPIRED"
+        "INVALID_TOKEN" -> "INVALID_TOKEN"
+        "INVALID_AMOUNT" -> "INVALID_AMOUNT"
+        "INVALID_CALLBACK_URL" -> "INVALID_CALLBACK_URL"
+        "INVALID_COMPLETE_URL" -> "INVALID_COMPLETE_URL"
+        "NOT_AUTHENTICATED" -> "NOT_AUTHENTICATED"
+        "ACCOUNT_NOT_CONFIGURED" -> "ACCOUNT_NOT_CONFIGURED"
         else -> "PAYMENT_FAILED"
       }
       promise.reject(code, errorMessage, null)

@@ -15,10 +15,15 @@ export interface AcceptPaymentParams {
   /** Optional customer phone. */
   customerPhone?: string;
   /**
-   * Your app's registered URL scheme for receiving callbacks (iOS only, required).
-   * Must be registered in Info.plist.
+   * Your app's registered URL scheme for receiving the post-payment redirect (iOS only, required).
+   * Must be registered in Info.plist. UX redirect only — NOT trusted; never base business decisions on it.
    */
-  callbackScheme?: string;
+  completeScheme?: string;
+  /**
+   * Optional https webhook URL to receive a signed payment notification (trusted).
+   * Use this for order fulfillment. Must be https, ≤ 2048 chars.
+   */
+  callbackUrl?: string;
   /**
    * Android payment mode: 'direct' (CloudCommerce) or 'via-monei-pay' (MONEI Pay intent).
    * Default: 'direct'. Ignored on iOS.
@@ -53,5 +58,11 @@ export type MoneiPayErrorCode =
   | "CANCELLED"
   | "INVALID_PARAMS"
   | "INVALID_TOKEN"
+  | "TOKEN_EXPIRED"
+  | "INVALID_AMOUNT"
+  | "INVALID_CALLBACK_URL"
+  | "INVALID_COMPLETE_URL"
+  | "NOT_AUTHENTICATED"
+  | "ACCOUNT_NOT_CONFIGURED"
   | "NO_ACTIVITY"
   | "FAILED_TO_OPEN";

@@ -18,9 +18,20 @@ public class MoneiPayModule: Module {
         promise.reject("INVALID_PARAMS", "amount must be positive")
         return
       }
-      guard let callbackScheme = params["callbackScheme"] as? String, !callbackScheme.isEmpty else {
-        promise.reject("INVALID_PARAMS", "callbackScheme is required on iOS")
+      guard let completeScheme = params["completeScheme"] as? String, !completeScheme.isEmpty else {
+        promise.reject("INVALID_PARAMS", "completeScheme is required on iOS")
         return
+      }
+
+      // Client-side sanity check: must mirror lib/deep-link-utils.ts isValidCallbackUrl —
+      // keep in sync. Server-side zod (mcc-service) is the real boundary; skip private-IP check here.
+      var callbackUrl: String?
+      if let raw = params["callbackUrl"] as? String, !raw.isEmpty {
+        if !Self.isValidCallbackUrl(raw) {
+          promise.reject("INVALID_CALLBACK_URL", "callbackUrl must be https and ≤ 2048 chars")
+          return
+        }
+        callbackUrl = raw
       }
 
       if self.pendingPromise != nil {
@@ -36,9 +47,12 @@ public class MoneiPayModule: Module {
       var queryItems = [
         URLQueryItem(name: "amount", value: String(amount)),
         URLQueryItem(name: "auth_token", value: token),
-        URLQueryItem(name: "callback", value: "\(callbackScheme)://payment-result")
+        URLQueryItem(name: "complete_url", value: "\(completeScheme)://payment-result")
       ]
 
+      if let cb = callbackUrl {
+        queryItems.append(URLQueryItem(name: "callback_url", value: cb))
+      }
       if let desc = params["description"] as? String, !desc.isEmpty {
         queryItems.append(URLQueryItem(name: "description", value: desc))
       }
@@ -77,7 +91,7 @@ public class MoneiPayModule: Module {
       }
     }
 
-    Function("handleCallback") { (urlString: String) -> Bool in
+    Function("handleCompleteRedirect") { (urlString: String) -> Bool in
       guard self.pendingPromise != nil else { return false }
 
       guard let url = URL(string: urlString),
@@ -91,21 +105,17 @@ public class MoneiPayModule: Module {
         }
       } ?? [:]
 
-      // Handle error callback
+      // Handle error redirect
       if params["success"] == "false" {
-        let error = params["error"]
-        if error == "CANCELLED" || error == "USER_CANCELLED" {
-          self.rejectPending(code: "CANCELLED", message: "Payment was cancelled")
-        } else {
-          self.rejectPending(code: "PAYMENT_FAILED", message: error ?? "Payment failed")
-        }
+        let error = params["error"] ?? "PAYMENT_FAILED"
+        self.rejectPending(code: Self.mapErrorCode(error), message: error)
         return true
       }
 
       // Parse success
       guard params["success"] == "true",
             let transactionId = params["transaction_id"], !transactionId.isEmpty else {
-        self.rejectPending(code: "PAYMENT_FAILED", message: "Invalid callback parameters")
+        self.rejectPending(code: "PAYMENT_FAILED", message: "Invalid redirect parameters")
         return true
       }
 
@@ -130,5 +140,34 @@ public class MoneiPayModule: Module {
   private func rejectPending(code: String, message: String) {
     pendingPromise?.reject(code, message)
     pendingPromise = nil
+  }
+
+  // Maps the full set of error codes emitted by monei-pay app's complete_url onto SDK error codes.
+  internal static func mapErrorCode(_ raw: String) -> String {
+    switch raw {
+    case "CANCELLED", "USER_CANCELLED":
+      return "CANCELLED"
+    case "TOKEN_EXPIRED":
+      return "TOKEN_EXPIRED"
+    case "INVALID_TOKEN":
+      return "INVALID_TOKEN"
+    case "INVALID_AMOUNT":
+      return "INVALID_AMOUNT"
+    case "INVALID_CALLBACK_URL":
+      return "INVALID_CALLBACK_URL"
+    case "INVALID_COMPLETE_URL":
+      return "INVALID_COMPLETE_URL"
+    case "NOT_AUTHENTICATED":
+      return "NOT_AUTHENTICATED"
+    case "ACCOUNT_NOT_CONFIGURED":
+      return "ACCOUNT_NOT_CONFIGURED"
+    default:
+      return "PAYMENT_FAILED"
+    }
+  }
+
+  // Must mirror lib/deep-link-utils.ts isValidCallbackUrl — keep in sync.
+  internal static func isValidCallbackUrl(_ url: String) -> Bool {
+    return url.hasPrefix("https://") && url.count <= 2048
   }
 }

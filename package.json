@@ -1,6 +1,6 @@
 {
   "name": "@monei-js/monei-pay-react-native-sdk",
-  "version": "0.2.2",
+  "version": "1.0.0",
   "description": "React Native SDK for accepting NFC payments via MONEI Pay",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -8,7 +8,7 @@
     "lint": "expo-module lint",
     "build": "expo-module build",
     "clean": "expo-module clean",
-    "test": "expo-module test --passWithNoTests",
+    "test": "expo-module test",
     "prepare": "expo-module prepare",
     "prepublishOnly": "expo-module prepublishOnly",
     "release": "release-it",

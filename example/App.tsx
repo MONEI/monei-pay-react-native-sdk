@@ -16,7 +16,7 @@ import * as MoneiPay from '@monei-pay/react-native';
 
 type PaymentMode = 'direct' | 'via-monei-pay';
 
-const DEFAULT_USER_AGENT = 'MONEI/MerchantDemoRN/0.2.1';
+const DEFAULT_USER_AGENT = 'MONEI/MerchantDemoRN/1.0.0';
 
 export default function App() {
   const [apiKey, setApiKey] = useState('');
@@ -25,6 +25,7 @@ export default function App() {
   const [posId, setPosId] = useState('');
   const [authToken, setAuthToken] = useState('');
   const [amountText, setAmountText] = useState('');
+  const [callbackUrl, setCallbackUrl] = useState('');
   const [mode, setMode] = useState<PaymentMode>('direct');
   const [result, setResult] = useState<MoneiPay.PaymentResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +36,7 @@ export default function App() {
   useEffect(() => {
     if (Platform.OS === 'ios') {
       const subscription = Linking.addEventListener('url', ({url}) => {
-        MoneiPay.handleCallback(url);
+        MoneiPay.handleCompleteRedirect(url);
       });
       return () => subscription.remove();
     }
@@ -105,7 +106,8 @@ export default function App() {
       const paymentResult = await MoneiPay.acceptPayment({
         token: authToken,
         amount,
-        callbackScheme: 'monei-pay-example',
+        completeScheme: 'monei-pay-example',
+        callbackUrl: callbackUrl.trim() || undefined,
         mode,
       });
       setResult(paymentResult);
@@ -198,6 +200,15 @@ export default function App() {
           value={amountText}
           onChangeText={setAmountText}
           keyboardType="number-pad"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Webhook URL (optional, https://..., signed callback)"
+          value={callbackUrl}
+          onChangeText={setCallbackUrl}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="url"
         />
 
         {Platform.OS === 'android' && (

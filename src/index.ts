@@ -10,7 +10,7 @@ export type {
 
 interface MoneiPayNativeModule {
   acceptPayment(params: Record<string, unknown>): Promise<PaymentResult>;
-  handleCallback(url: string): boolean;
+  handleCompleteRedirect(url: string): boolean;
   cancelPendingPayment(): void;
 }
 
@@ -19,7 +19,7 @@ const NativeModule = requireNativeModule<MoneiPayNativeModule>("MoneiPay");
 /**
  * Accept an NFC payment via MONEI Pay.
  *
- * On iOS: opens MONEI Pay via URL scheme. You must wire `handleCallback` in your URL handler.
+ * On iOS: opens MONEI Pay via URL scheme. You must wire `handleCompleteRedirect` in your URL handler.
  * On Android: launches MONEI Pay intent or CloudCommerce directly (based on `mode`).
  *
  * @param params - Payment parameters.
@@ -35,8 +35,8 @@ export async function acceptPayment(
   if (!params.amount || params.amount <= 0) {
     throw new Error("amount must be a positive number");
   }
-  if (Platform.OS === "ios" && !params.callbackScheme) {
-    throw new Error("callbackScheme is required on iOS");
+  if (Platform.OS === "ios" && !params.completeScheme) {
+    throw new Error("completeScheme is required on iOS");
   }
 
   return NativeModule.acceptPayment({
@@ -46,13 +46,14 @@ export async function acceptPayment(
     customerName: params.customerName,
     customerEmail: params.customerEmail,
     customerPhone: params.customerPhone,
-    callbackScheme: params.callbackScheme,
+    completeScheme: params.completeScheme,
+    callbackUrl: params.callbackUrl,
     mode: params.mode ?? "direct",
   });
 }
 
 /**
- * Handle a callback URL from MONEI Pay (iOS only).
+ * Handle a complete-redirect URL from MONEI Pay (iOS only).
  *
  * Wire this into your app's URL handler:
  * ```tsx
@@ -60,15 +61,15 @@ export async function acceptPayment(
  * import * as MoneiPay from '@monei-pay/react-native';
  *
  * Linking.addEventListener('url', ({ url }) => {
- *   MoneiPay.handleCallback(url);
+ *   MoneiPay.handleCompleteRedirect(url);
  * });
  * ```
  *
- * @param url - The incoming callback URL.
+ * @param url - The incoming complete-redirect URL.
  * @returns `true` if the URL was handled by the SDK.
  */
-export function handleCallback(url: string): boolean {
-  return NativeModule.handleCallback(url);
+export function handleCompleteRedirect(url: string): boolean {
+  return NativeModule.handleCompleteRedirect(url);
 }
 
 /**
