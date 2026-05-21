@@ -23,8 +23,8 @@ public class MoneiPayModule: Module {
         return
       }
 
-      // Client-side sanity check: must mirror lib/deep-link-utils.ts isValidCallbackUrl —
-      // keep in sync. Server-side zod (mcc-service) is the real boundary; skip private-IP check here.
+      // Client-side sanity check: must mirror lib/deep-link-utils.ts isValidCallbackUrl
+      // (keep in sync). Server-side zod (mcc-service) is the real boundary; skip private-IP check here.
       var callbackUrl: String?
       if let raw = params["callbackUrl"] as? String, !raw.isEmpty {
         if !Self.isValidCallbackUrl(raw) {
@@ -166,7 +166,7 @@ public class MoneiPayModule: Module {
     }
   }
 
-  // Must mirror lib/deep-link-utils.ts isValidCallbackUrl — keep in sync.
+  // Must mirror lib/deep-link-utils.ts isValidCallbackUrl (keep in sync).
   internal static func isValidCallbackUrl(_ url: String) -> Bool {
     return url.hasPrefix("https://") && url.count <= 2048
   }

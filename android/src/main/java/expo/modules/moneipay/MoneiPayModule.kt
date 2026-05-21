@@ -23,7 +23,7 @@ class MoneiPayModule : Module() {
     private const val CLOUD_COMMERCE_PACKAGE = "com.mastercard.cpos"
     private const val SDK_VERSION = "1.0.0"
 
-    // Must mirror lib/deep-link-utils.ts isValidCallbackUrl — keep in sync.
+    // Must mirror lib/deep-link-utils.ts isValidCallbackUrl (keep in sync).
     internal fun isValidCallbackUrl(url: String): Boolean {
       return url.startsWith("https://") && url.length <= 2048
     }

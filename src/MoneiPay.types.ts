@@ -16,7 +16,7 @@ export interface AcceptPaymentParams {
   customerPhone?: string;
   /**
    * Your app's registered URL scheme for receiving the post-payment redirect (iOS only, required).
-   * Must be registered in Info.plist. UX redirect only — NOT trusted; never base business decisions on it.
+   * Must be registered in Info.plist. UX redirect only (NOT trusted); never base business decisions on it.
    */
   completeScheme?: string;
   /**

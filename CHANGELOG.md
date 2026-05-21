@@ -4,7 +4,7 @@
 
 ### BREAKING CHANGES
 
-* **wire format:** `callback` query param removed from the MONEI Pay deep link in favor of `complete_url` (UX redirect) + `callback_url` (signed webhook). Two channels with different trust models — see https://docs.monei.com/monei-pay/app-integration/getting-started for the trust split.
+* **wire format:** `callback` query param removed from the MONEI Pay deep link in favor of `complete_url` (UX redirect) + `callback_url` (signed webhook). Two channels with different trust models. See https://docs.monei.com/monei-pay/app-integration/getting-started for the trust split.
 * **public API:** renamed `callbackScheme` → `completeScheme` in `AcceptPaymentParams`.
 * **public API:** renamed `handleCallback` → `handleCompleteRedirect` (TS + iOS native module).
 
