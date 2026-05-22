@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.1.0](https://github.com/MONEI/monei-pay-react-native-sdk/compare/v1.0.0...v1.1.0) (2026-05-22)
+
+
+### Features
+
+* forward orderId and transactionType through SDK ([dd0936b](https://github.com/MONEI/monei-pay-react-native-sdk/commit/dd0936bfa86481f2c26bcc78649478c3dc9e8c86))
+
 ## [1.0.0](https://github.com/MONEI/monei-pay-react-native-sdk/compare/v0.2.2...v1.0.0) (2026-05-21)
 
 ### BREAKING CHANGES
