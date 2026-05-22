@@ -88,6 +88,32 @@ describe("acceptPayment", () => {
     const args = nativeModule.acceptPayment.mock.calls[0][0];
     expect(args.callbackUrl).toBeUndefined();
   });
+
+  // orderId is the merchant reconciliation key surfaced in the webhook.
+  // transactionType is the SALE/AUTH override; backend validates the enum.
+  it("forwards orderId + transactionType to native module", async () => {
+    await MoneiPay.acceptPayment({
+      token: "jwt",
+      amount: 1500,
+      completeScheme: "myapp",
+      orderId: "qmrid:abc-123",
+      transactionType: "AUTH",
+    });
+    const args = nativeModule.acceptPayment.mock.calls[0][0];
+    expect(args.orderId).toBe("qmrid:abc-123");
+    expect(args.transactionType).toBe("AUTH");
+  });
+
+  it("forwards undefined orderId + transactionType when omitted", async () => {
+    await MoneiPay.acceptPayment({
+      token: "jwt",
+      amount: 1500,
+      completeScheme: "myapp",
+    });
+    const args = nativeModule.acceptPayment.mock.calls[0][0];
+    expect(args.orderId).toBeUndefined();
+    expect(args.transactionType).toBeUndefined();
+  });
 });
 
 describe("handleCompleteRedirect", () => {

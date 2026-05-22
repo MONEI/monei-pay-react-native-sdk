@@ -64,6 +64,8 @@ class MoneiPayModule : Module() {
       val customerEmail = params["customerEmail"] as? String
       val customerPhone = params["customerPhone"] as? String
       val callbackUrl = (params["callbackUrl"] as? String)?.takeIf { it.isNotEmpty() }
+      val merchantOrderId = (params["orderId"] as? String)?.takeIf { it.isNotEmpty() }
+      val transactionType = (params["transactionType"] as? String)?.takeIf { it.isNotEmpty() }
 
       if (callbackUrl != null && !isValidCallbackUrl(callbackUrl)) {
         promise.reject("INVALID_CALLBACK_URL", "callbackUrl must be https and <= 2048 chars", null)
@@ -75,10 +77,12 @@ class MoneiPayModule : Module() {
 
       when (mode) {
         "via-monei-pay" -> launchMoneiPay(
-          activity, token, amount, description, customerName, customerEmail, customerPhone, callbackUrl
+          activity, token, amount, description, customerName, customerEmail, customerPhone,
+          callbackUrl, merchantOrderId, transactionType
         )
         else -> launchDirect(
-          activity, token, amount, description, customerName, customerEmail, customerPhone, callbackUrl
+          activity, token, amount, description, customerName, customerEmail, customerPhone,
+          callbackUrl, merchantOrderId, transactionType
         )
       }
     }
@@ -108,7 +112,9 @@ class MoneiPayModule : Module() {
     customerName: String?,
     customerEmail: String?,
     customerPhone: String?,
-    callbackUrl: String?
+    callbackUrl: String?,
+    merchantOrderId: String?,
+    transactionType: String?
   ) {
     val intent = Intent(MONEI_PAY_ACTION).apply {
       putExtra("amount_cents", amount)
@@ -118,6 +124,8 @@ class MoneiPayModule : Module() {
       if (!customerEmail.isNullOrEmpty()) putExtra("customer_email", customerEmail)
       if (!customerPhone.isNullOrEmpty()) putExtra("customer_phone", customerPhone)
       if (!callbackUrl.isNullOrEmpty()) putExtra("callback_url", callbackUrl)
+      if (!merchantOrderId.isNullOrEmpty()) putExtra("order_id", merchantOrderId)
+      if (!transactionType.isNullOrEmpty()) putExtra("transaction_type", transactionType)
     }
 
     if (!isActivityResolvable(activity, intent)) {
@@ -137,7 +145,9 @@ class MoneiPayModule : Module() {
     customerName: String?,
     customerEmail: String?,
     customerPhone: String?,
-    callbackUrl: String?
+    callbackUrl: String?,
+    merchantOrderId: String?,
+    transactionType: String?
   ) {
     // Decode JWT for merchant metadata
     val claims = decodeJwt(token)
@@ -165,7 +175,8 @@ class MoneiPayModule : Module() {
 
     val companyName = claims.optString("company_name", "MONEI Pay")
     val mcc = claims.optString("mcc", "5999")
-    val orderId = UUID.randomUUID().toString().replace("-", "").take(12).uppercase()
+    val orderId = if (!merchantOrderId.isNullOrEmpty()) merchantOrderId
+                  else UUID.randomUUID().toString().replace("-", "").take(12).uppercase()
     val locale = Locale.getDefault().let {
       val lang = it.language
       val country = it.country
@@ -188,6 +199,7 @@ class MoneiPayModule : Module() {
       if (!customerEmail.isNullOrEmpty()) put("customerEmail", customerEmail)
       if (!customerPhone.isNullOrEmpty()) put("customerPhone", customerPhone)
       if (!callbackUrl.isNullOrEmpty()) put("callbackUrl", callbackUrl)
+      if (!transactionType.isNullOrEmpty()) put("transactionType", transactionType)
     }
 
     val payload = JSONObject().apply {

@@ -65,6 +65,12 @@ public class MoneiPayModule: Module {
       if let phone = params["customerPhone"] as? String, !phone.isEmpty {
         queryItems.append(URLQueryItem(name: "customer_phone", value: phone))
       }
+      if let oid = params["orderId"] as? String, !oid.isEmpty {
+        queryItems.append(URLQueryItem(name: "order_id", value: oid))
+      }
+      if let txType = params["transactionType"] as? String, !txType.isEmpty {
+        queryItems.append(URLQueryItem(name: "transaction_type", value: txType))
+      }
 
       components.queryItems = queryItems
 

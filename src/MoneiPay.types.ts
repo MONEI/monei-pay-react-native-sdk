@@ -25,6 +25,16 @@ export interface AcceptPaymentParams {
    */
   callbackUrl?: string;
   /**
+   * Optional merchant order reference. Used as the payment's orderId for
+   * reconciliation in the webhook callback. If empty, MONEI generates one.
+   */
+  orderId?: string;
+  /**
+   * Optional transaction type (SALE / AUTH / REFUND / CAPTURE / CANCEL /
+   * PAYOUT / VERIF). Backend validates; invalid values are rejected.
+   */
+  transactionType?: string;
+  /**
    * Android payment mode: 'direct' (CloudCommerce) or 'via-monei-pay' (MONEI Pay intent).
    * Default: 'direct'. Ignored on iOS.
    */

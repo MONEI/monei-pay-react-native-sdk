@@ -48,6 +48,8 @@ export async function acceptPayment(
     customerPhone: params.customerPhone,
     completeScheme: params.completeScheme,
     callbackUrl: params.callbackUrl,
+    orderId: params.orderId,
+    transactionType: params.transactionType,
     mode: params.mode ?? "direct",
   });
 }
