@@ -102,14 +102,17 @@ Accept an NFC payment. Returns a Promise.
 | `customerName` | `string` | No | Customer name |
 | `customerEmail` | `string` | No | Customer email |
 | `customerPhone` | `string` | No | Customer phone |
-| `callbackScheme` | `string` | iOS | Your app's registered URL scheme |
+| `callbackUrl` | `string` | No | HTTPS endpoint for the signed webhook. Trusted channel — use for fulfillment. Must be `https://`, max 2048 chars. |
+| `orderId` | `string` | No | Merchant order reference. Surfaced in the webhook callback for reconciliation. Max 2048 chars. If omitted, the SDK generates one. |
+| `transactionType` | `string` | No | Optional: `'SALE'` (default), `'AUTH'`, `'REFUND'`, `'CAPTURE'`, `'CANCEL'`, `'PAYOUT'`, `'VERIF'`. Server-validated. |
+| `completeScheme` | `string` | iOS | Your app's registered URL scheme. MONEI Pay opens `<completeScheme>://payment-result` on completion. |
 | `mode` | `string` | No | Android: `'direct'` (default) or `'via-monei-pay'` |
 
 Returns `PaymentResult`. Throws on failure.
 
-### `handleCallback(url)`
+### `handleCompleteRedirect(url)`
 
-Handle incoming callback URL from MONEI Pay (iOS only). Wire into your Linking handler.
+Handle the post-payment redirect URL from MONEI Pay (iOS only). Wire into your `Linking` handler.
 
 ### `cancelPendingPayment()`
 
