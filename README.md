@@ -43,6 +43,11 @@ Add to your `app.json` or `app.config.js`:
 }
 ```
 
+On iOS the SDK launches MONEI Pay via a Universal Link (`https://pay.monei.com/accept-payment`), which
+opens the app directly with **no "Open in MONEI Pay?" prompt**. Installs that predate Universal Link
+support fall back to the `monei-pay://` custom scheme, so the `LSApplicationQueriesSchemes` entry above
+is still required. No extra merchant configuration is needed.
+
 ### Android Setup
 
 No additional setup needed — the SDK's AndroidManifest includes the required `<queries>` entries.
