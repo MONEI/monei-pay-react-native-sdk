@@ -2,7 +2,11 @@ import ExpoModulesCore
 import UIKit
 
 public class MoneiPayModule: Module {
+  // Custom scheme: fallback for installs without the Universal Links entitlement.
   private static let moneiPayScheme = "monei-pay"
+  // Universal Link host: `https://pay.monei.com/accept-payment` opens MONEI Pay with no
+  // "Open in MONEI Pay?" prompt when the installed build has the associated-domains entitlement.
+  private static let universalLinkHost = "pay.monei.com"
 
   private var pendingPromise: Promise?
 
@@ -39,11 +43,7 @@ public class MoneiPayModule: Module {
         return
       }
 
-      // Build MONEI Pay URL
-      var components = URLComponents()
-      components.scheme = Self.moneiPayScheme
-      components.host = "accept-payment"
-
+      // Build the launch URLs. Both carry identical query params; only scheme/host/path differ.
       var queryItems = [
         URLQueryItem(name: "amount", value: String(amount)),
         URLQueryItem(name: "auth_token", value: token),
@@ -72,9 +72,20 @@ public class MoneiPayModule: Module {
         queryItems.append(URLQueryItem(name: "transaction_type", value: txType))
       }
 
-      components.queryItems = queryItems
+      // Universal Link (preferred, no prompt)
+      var universalComponents = URLComponents()
+      universalComponents.scheme = "https"
+      universalComponents.host = Self.universalLinkHost
+      universalComponents.path = "/accept-payment"
+      universalComponents.queryItems = queryItems
 
-      guard let url = components.url else {
+      // Custom-scheme fallback (older installs without the entitlement)
+      var schemeComponents = URLComponents()
+      schemeComponents.scheme = Self.moneiPayScheme
+      schemeComponents.host = "accept-payment"
+      schemeComponents.queryItems = queryItems
+
+      guard let universalURL = universalComponents.url, let schemeURL = schemeComponents.url else {
         promise.reject("INVALID_PARAMS", "Failed to build payment URL")
         return
       }
@@ -89,9 +100,15 @@ public class MoneiPayModule: Module {
 
         self.pendingPromise = promise
 
-        UIApplication.shared.open(url) { success in
-          if !success {
-            self.rejectPending(code: "FAILED_TO_OPEN", message: "Failed to open MONEI Pay")
+        // Try the Universal Link first: `universalLinksOnly` opens it only if an installed app
+        // claims pay.monei.com (a build with the entitlement) — no prompt. Otherwise iOS returns
+        // false without opening Safari, so we fall back to the custom scheme (which prompts).
+        UIApplication.shared.open(universalURL, options: [.universalLinksOnly: true]) { opened in
+          if opened { return }
+          UIApplication.shared.open(schemeURL) { success in
+            if !success {
+              self.rejectPending(code: "FAILED_TO_OPEN", message: "Failed to open MONEI Pay")
+            }
           }
         }
       }
