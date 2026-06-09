@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.2.0](https://github.com/MONEI/monei-pay-react-native-sdk/compare/v1.1.0...v1.2.0) (2026-06-09)
+
+
+### Features
+
+* **ios:** launch MONEI Pay via Universal Link to skip the system prompt ([#1](https://github.com/MONEI/monei-pay-react-native-sdk/issues/1)) ([767501b](https://github.com/MONEI/monei-pay-react-native-sdk/commit/767501b3d90cd4e068250614ac2c0fbbe85c5c84))
+
 # [1.1.0](https://github.com/MONEI/monei-pay-react-native-sdk/compare/v1.0.0...v1.1.0) (2026-05-22)
 
 
