@@ -12,7 +12,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
 } from 'react-native';
-import * as MoneiPay from '@monei-pay/react-native';
+import * as MoneiPay from '@monei-js/monei-pay-react-native-sdk';
 
 type PaymentMode = 'direct' | 'via-monei-pay';
 
