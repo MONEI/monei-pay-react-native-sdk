@@ -17,6 +17,13 @@ jest.mock("expo-modules-core", () => {
   const mockHandleCompleteRedirect = jest.fn(() => true);
   const mockCancelPendingPayment = jest.fn();
   return {
+    CodedError: class extends Error {
+      code: string;
+      constructor(code: string, message: string) {
+        super(message);
+        this.code = code;
+      }
+    },
     requireNativeModule: () => ({
       acceptPayment: mockAcceptPayment,
       handleCompleteRedirect: mockHandleCompleteRedirect,
@@ -102,6 +109,46 @@ describe("acceptPayment", () => {
     const args = nativeModule.acceptPayment.mock.calls[0][0];
     expect(args.orderId).toBe("qmrid:abc-123");
     expect(args.transactionType).toBe("AUTH");
+  });
+
+  // A decline must reject as before (existing catch code), never resolve as a
+  // payment result, and must expose the decline data to JS.
+  it("throws a native decline as PAYMENT_FAILED with the declined result", async () => {
+    nativeModule.acceptPayment.mockResolvedValueOnce({
+      transactionId: "pay_1",
+      success: false,
+      amount: 1500,
+      cardBrand: "visa",
+      maskedCardNumber: "****1234",
+      statusCode: "E301",
+      statusMessage: "Insufficient funds",
+      errorCode: "PAYMENT_FAILED",
+      errorMessage: "PAYMENT_FAILED",
+    });
+
+    const error: MoneiPay.MoneiPayError = await MoneiPay.acceptPayment({
+      token: "jwt",
+      amount: 1500,
+      completeScheme: "myapp",
+    }).then(
+      () => {
+        throw new Error("expected a rejection");
+      },
+      (e) => e
+    );
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.code).toBe("PAYMENT_FAILED");
+    expect(error.message).toBe("PAYMENT_FAILED");
+    expect(error.result).toEqual({
+      transactionId: "pay_1",
+      success: false,
+      amount: 1500,
+      cardBrand: "visa",
+      maskedCardNumber: "****1234",
+      statusCode: "E301",
+      statusMessage: "Insufficient funds",
+    });
   });
 
   it("forwards undefined orderId + transactionType when omitted", async () => {

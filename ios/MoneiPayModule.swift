@@ -131,7 +131,17 @@ public class MoneiPayModule: Module {
       // Handle error redirect
       if params["success"] == "false" {
         let error = params["error"] ?? "PAYMENT_FAILED"
-        self.rejectPending(code: Self.mapErrorCode(error), message: error)
+        let code = Self.mapErrorCode(error)
+        // A decline with a payment id resolves with errorCode; JS throws it with the result.
+        if code == "PAYMENT_FAILED", let transactionId = params["transaction_id"], !transactionId.isEmpty {
+          var result = Self.paymentResult(params, transactionId: transactionId, success: false)
+          result["errorCode"] = code
+          result["errorMessage"] = error
+          self.pendingPromise?.resolve(result)
+          self.pendingPromise = nil
+          return true
+        }
+        self.rejectPending(code: code, message: error)
         return true
       }
 
@@ -142,13 +152,7 @@ public class MoneiPayModule: Module {
         return true
       }
 
-      let result: [String: Any] = [
-        "transactionId": transactionId,
-        "success": true,
-        "amount": Int(params["amount"] ?? "") ?? 0,
-        "cardBrand": params["card_brand"] ?? "",
-        "maskedCardNumber": params["masked_card_number"] ?? ""
-      ]
+      let result = Self.paymentResult(params, transactionId: transactionId, success: true)
 
       self.pendingPromise?.resolve(result)
       self.pendingPromise = nil
@@ -163,6 +167,40 @@ public class MoneiPayModule: Module {
   private func rejectPending(code: String, message: String) {
     pendingPromise?.reject(code, message)
     pendingPromise = nil
+  }
+
+  private static let optionalResultParams = [
+    "orderId": "order_id",
+    "currency": "currency",
+    "status": "status",
+    "statusCode": "status_code",
+    "statusMessage": "status_message",
+    "authorizationCode": "authorization_code",
+    "last4": "last4",
+    "cardType": "card_type",
+    "cardCountry": "card_country"
+  ]
+
+  internal static func paymentResult(_ params: [String: String], transactionId: String, success: Bool) -> [String: Any] {
+    let maskedCardNumber = params["masked_card_number"] ?? ""
+    var result: [String: Any] = [
+      "transactionId": transactionId,
+      "success": success,
+      "amount": Int(params["amount"] ?? "") ?? 0,
+      "cardBrand": params["card_brand"] ?? "",
+      "maskedCardNumber": maskedCardNumber
+    ]
+    for (key, param) in optionalResultParams {
+      if let value = params[param], !value.isEmpty {
+        result[key] = value
+      }
+    }
+    // Older MONEI Pay versions send only masked_card_number.
+    let tail = String(maskedCardNumber.suffix(4))
+    if result["last4"] == nil, tail.count == 4, tail.allSatisfy(\.isNumber) {
+      result["last4"] = tail
+    }
+    return result
   }
 
   // Maps the full set of error codes emitted by monei-pay app's complete_url onto SDK error codes.

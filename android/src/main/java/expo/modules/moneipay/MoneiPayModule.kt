@@ -260,6 +260,14 @@ class MoneiPayModule : Module() {
         "ACCOUNT_NOT_CONFIGURED" -> "ACCOUNT_NOT_CONFIGURED"
         else -> "PAYMENT_FAILED"
       }
+      // A decline with a payment id resolves with errorCode; JS throws it with the result.
+      if (code == "PAYMENT_FAILED" && !data.getStringExtra("transaction_id").isNullOrEmpty()) {
+        promise.resolve(
+          moneiPayResult(data, success = false) +
+            mapOf("errorCode" to code, "errorMessage" to errorMessage)
+        )
+        return
+      }
       promise.reject(code, errorMessage, null)
       return
     }
@@ -269,14 +277,37 @@ class MoneiPayModule : Module() {
       return
     }
 
-    val result = mapOf(
+    promise.resolve(moneiPayResult(data, data.getBooleanExtra("success", false)))
+  }
+
+  private fun moneiPayResult(data: Intent, success: Boolean): Map<String, Any> {
+    val maskedCardNumber = data.getStringExtra("masked_card_number") ?: ""
+    val result = mutableMapOf<String, Any>(
       "transactionId" to (data.getStringExtra("transaction_id") ?: ""),
-      "success" to data.getBooleanExtra("success", false),
+      "success" to success,
       "amount" to data.getIntExtra("amount", 0),
       "cardBrand" to (data.getStringExtra("card_brand") ?: ""),
-      "maskedCardNumber" to (data.getStringExtra("masked_card_number") ?: "")
+      "maskedCardNumber" to maskedCardNumber
     )
-    promise.resolve(result)
+    mapOf(
+      "orderId" to "order_id",
+      "currency" to "currency",
+      "status" to "status",
+      "statusCode" to "status_code",
+      "statusMessage" to "status_message",
+      "authorizationCode" to "authorization_code",
+      "last4" to "last4",
+      "cardType" to "card_type",
+      "cardCountry" to "card_country"
+    ).forEach { (key, extra) ->
+      data.getStringExtra(extra)?.takeIf { it.isNotEmpty() }?.let { result[key] = it }
+    }
+    // Older MONEI Pay versions send only masked_card_number.
+    val tail = maskedCardNumber.takeLast(4)
+    if ("last4" !in result && tail.length == 4 && tail.all { it.isDigit() }) {
+      result["last4"] = tail
+    }
+    return result
   }
 
   private fun handleDirectResult(data: Intent?) {
