@@ -56,36 +56,42 @@ No additional setup needed — the SDK's AndroidManifest includes the required `
 
 ```tsx
 import { useEffect } from 'react';
-import { Linking, Platform } from 'react-native';
+import { Button, Linking, Platform } from 'react-native';
 import * as MoneiPay from '@monei-js/monei-pay-react-native-sdk';
+import type { MoneiPayError } from '@monei-js/monei-pay-react-native-sdk';
 
 function PaymentScreen() {
-  // Wire URL callback handler (iOS only)
+  // iOS only: send the MONEI Pay redirect URL to the SDK.
   useEffect(() => {
-    if (Platform.OS === 'ios') {
-      const sub = Linking.addEventListener('url', ({ url }) => {
-        MoneiPay.handleCallback(url);
-      });
-      return () => sub.remove();
-    }
+    if (Platform.OS !== 'ios') return;
+    const sub = Linking.addEventListener('url', ({ url }) => {
+      MoneiPay.handleCompleteRedirect(url);
+    });
+    return () => sub.remove();
   }, []);
 
   const handlePayment = async () => {
     try {
       const result = await MoneiPay.acceptPayment({
-        token: 'eyJ...',              // Raw JWT from your backend
-        amount: 1500,                 // Amount in cents (1500 = 15.00 EUR)
-        description: 'Order #123',    // Optional
-        customerName: 'John Doe',     // Optional
-        customerEmail: 'john@ex.com', // Optional
-        callbackScheme: 'your-app',   // iOS only — your registered URL scheme
-        mode: 'direct',               // Android only — 'direct' or 'via-monei-pay'
+        token: 'eyJ...',                   // Raw JWT from your backend
+        amount: 1500,                      // Amount in cents (1500 = 15.00 EUR)
+        description: 'Order #123',         // Optional
+        orderId: 'order-123',              // Optional. Your order reference
+        callbackUrl: 'https://example.com/monei-webhook', // Optional. Signed webhook for fulfillment
+        completeScheme: 'your-app-scheme', // iOS only, required. Your registered URL scheme
+        mode: 'direct',                    // Android only. 'direct' or 'via-monei-pay'
       });
 
-      console.log('Payment approved:', result.transactionId);
+      // Display data only. Confirm the payment on your server before fulfillment.
+      console.log('Payment approved:', result.transactionId, result.status);
       console.log('Card:', result.cardBrand, result.maskedCardNumber);
-    } catch (error) {
-      console.error('Payment failed:', error.message);
+    } catch (e) {
+      const error = e as MoneiPayError;
+      if (error.code === 'PAYMENT_FAILED' && error.payment) {
+        console.log('Declined:', error.payment.statusCode, error.payment.statusMessage);
+      } else {
+        console.error('Payment failed:', error.code, error.message);
+      }
     }
   };
 
