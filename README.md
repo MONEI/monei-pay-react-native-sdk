@@ -148,7 +148,7 @@ The optional fields are set only when MONEI Pay sends them. Android `direct` mod
 
 ### Declined payments
 
-A declined payment rejects with `PAYMENT_FAILED`, as before. When MONEI Pay sends the payment id, the error has a `result` property: a `PaymentResult` with `success: false` and the decline reason.
+A declined payment rejects with `PAYMENT_FAILED`, as before. When MONEI Pay sends the payment id, the error has a `payment` property: a `PaymentResult` with `success: false` and the decline reason.
 
 ```ts
 import type { MoneiPayError } from '@monei-js/monei-pay-react-native-sdk';
@@ -157,8 +157,8 @@ try {
   await MoneiPay.acceptPayment(params);
 } catch (e) {
   const error = e as MoneiPayError;
-  if (error.code === 'PAYMENT_FAILED' && error.result) {
-    console.log('Declined:', error.result.transactionId, error.result.statusMessage);
+  if (error.code === 'PAYMENT_FAILED' && error.payment) {
+    console.log('Declined:', error.payment.transactionId, error.payment.statusMessage);
   }
 }
 ```

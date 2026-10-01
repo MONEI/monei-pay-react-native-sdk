@@ -113,7 +113,7 @@ describe("acceptPayment", () => {
 
   // A decline must reject as before (existing catch code), never resolve as a
   // payment result, and must expose the decline data to JS.
-  it("throws a native decline as PAYMENT_FAILED with the declined result", async () => {
+  it("throws a native decline as PAYMENT_FAILED with the declined payment", async () => {
     nativeModule.acceptPayment.mockResolvedValueOnce({
       transactionId: "pay_1",
       success: false,
@@ -140,7 +140,7 @@ describe("acceptPayment", () => {
     expect(error).toBeInstanceOf(Error);
     expect(error.code).toBe("PAYMENT_FAILED");
     expect(error.message).toBe("PAYMENT_FAILED");
-    expect(error.result).toEqual({
+    expect(error.payment).toEqual({
       transactionId: "pay_1",
       success: false,
       amount: 1500,

@@ -14,7 +14,7 @@ export type {
 } from "./MoneiPay.types";
 
 // Expo native promises drop extra data on reject. So native resolves a decline
-// with errorCode + errorMessage, and acceptPayment throws it here with the result.
+// with errorCode + errorMessage, and acceptPayment throws it here with the payment.
 interface NativePaymentResult extends PaymentResult {
   errorCode?: string;
   errorMessage?: string;
@@ -36,7 +36,7 @@ const NativeModule = requireNativeModule<MoneiPayNativeModule>("MoneiPay");
  *
  * @param params - Payment parameters.
  * @returns Payment result with transaction details.
- * @throws MoneiPayError. On `PAYMENT_FAILED` it can carry the declined payment in `result`.
+ * @throws MoneiPayError. On `PAYMENT_FAILED` it can carry the declined payment in `payment`.
  */
 export async function acceptPayment(
   params: AcceptPaymentParams
@@ -70,7 +70,7 @@ export async function acceptPayment(
       errorCode,
       errorMessage ?? errorCode
     ) as MoneiPayError;
-    error.result = result;
+    error.payment = result;
     throw error;
   }
   return result;

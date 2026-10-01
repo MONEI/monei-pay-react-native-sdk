@@ -85,7 +85,7 @@ export interface MoneiPayError extends Error {
    * The declined payment. Set only on `PAYMENT_FAILED` when MONEI Pay sends a
    * payment id. `success` is `false`. Display data only.
    */
-  result?: PaymentResult;
+  payment?: PaymentResult;
 }
 
 /**
