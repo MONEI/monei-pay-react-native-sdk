@@ -1,15 +1,27 @@
-import { requireNativeModule, Platform } from "expo-modules-core";
+import { CodedError, requireNativeModule, Platform } from "expo-modules-core";
 
-import type { AcceptPaymentParams, PaymentResult } from "./MoneiPay.types";
+import type {
+  AcceptPaymentParams,
+  MoneiPayError,
+  PaymentResult,
+} from "./MoneiPay.types";
 
 export type {
   AcceptPaymentParams,
   PaymentResult,
+  MoneiPayError,
   MoneiPayErrorCode,
 } from "./MoneiPay.types";
 
+// Expo native promises drop extra data on reject. So native resolves a decline
+// with errorCode + errorMessage, and acceptPayment throws it here with the payment.
+interface NativePaymentResult extends PaymentResult {
+  errorCode?: string;
+  errorMessage?: string;
+}
+
 interface MoneiPayNativeModule {
-  acceptPayment(params: Record<string, unknown>): Promise<PaymentResult>;
+  acceptPayment(params: Record<string, unknown>): Promise<NativePaymentResult>;
   handleCompleteRedirect(url: string): boolean;
   cancelPendingPayment(): void;
 }
@@ -24,7 +36,7 @@ const NativeModule = requireNativeModule<MoneiPayNativeModule>("MoneiPay");
  *
  * @param params - Payment parameters.
  * @returns Payment result with transaction details.
- * @throws Error with code from `MoneiPayErrorCode`.
+ * @throws MoneiPayError. On `PAYMENT_FAILED` it can carry the declined payment in `payment`.
  */
 export async function acceptPayment(
   params: AcceptPaymentParams
@@ -39,19 +51,29 @@ export async function acceptPayment(
     throw new Error("completeScheme is required on iOS");
   }
 
-  return NativeModule.acceptPayment({
-    token: params.token,
-    amount: params.amount,
-    description: params.description,
-    customerName: params.customerName,
-    customerEmail: params.customerEmail,
-    customerPhone: params.customerPhone,
-    completeScheme: params.completeScheme,
-    callbackUrl: params.callbackUrl,
-    orderId: params.orderId,
-    transactionType: params.transactionType,
-    mode: params.mode ?? "direct",
-  });
+  const { errorCode, errorMessage, ...result } =
+    await NativeModule.acceptPayment({
+      token: params.token,
+      amount: params.amount,
+      description: params.description,
+      customerName: params.customerName,
+      customerEmail: params.customerEmail,
+      customerPhone: params.customerPhone,
+      completeScheme: params.completeScheme,
+      callbackUrl: params.callbackUrl,
+      orderId: params.orderId,
+      transactionType: params.transactionType,
+      mode: params.mode ?? "direct",
+    });
+  if (errorCode) {
+    const error = new CodedError(
+      errorCode,
+      errorMessage ?? errorCode
+    ) as MoneiPayError;
+    error.payment = result;
+    throw error;
+  }
+  return result;
 }
 
 /**

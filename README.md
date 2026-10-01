@@ -132,6 +132,36 @@ Cancel any pending payment.
 | `amount` | `number` | Amount in cents |
 | `cardBrand` | `string` | Card brand (visa, mastercard, etc.) |
 | `maskedCardNumber` | `string` | Masked card number (****1234) |
+| `orderId` | `string?` | Merchant order reference |
+| `currency` | `string?` | ISO 4217 currency code (`EUR`) |
+| `status` | `string?` | MONEI payment status (`SUCCEEDED`, `AUTHORIZED`, `FAILED`, ...) |
+| `statusCode` | `string?` | MONEI status code (`E000`, `E301`, ...) |
+| `statusMessage` | `string?` | Human readable status (`Insufficient funds`) |
+| `authorizationCode` | `string?` | Issuer authorization code. Approved payments only. |
+| `last4` | `string?` | Last 4 digits of the card |
+| `cardType` | `string?` | `credit`, `debit` or `prepaid` |
+| `cardCountry` | `string?` | ISO 3166-1 alpha-2 country of the card issuer |
+
+The optional fields are set only when MONEI Pay sends them. Android `direct` mode does not set them.
+
+> **The result is display data only.** Use it to show a result screen. Before you fulfill the order, confirm the payment on your server with the signed webhook (`callbackUrl`) or `GET /payments/{id}`.
+
+### Declined payments
+
+A declined payment rejects with `PAYMENT_FAILED`, as before. When MONEI Pay sends the payment id, the error has a `payment` property: a `PaymentResult` with `success: false` and the decline reason.
+
+```ts
+import type { MoneiPayError } from '@monei-js/monei-pay-react-native-sdk';
+
+try {
+  await MoneiPay.acceptPayment(params);
+} catch (e) {
+  const error = e as MoneiPayError;
+  if (error.code === 'PAYMENT_FAILED' && error.payment) {
+    console.log('Declined:', error.payment.transactionId, error.payment.statusMessage);
+  }
+}
+```
 
 ### Error Codes
 

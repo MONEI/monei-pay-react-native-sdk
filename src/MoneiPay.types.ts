@@ -42,10 +42,11 @@ export interface AcceptPaymentParams {
 }
 
 /**
- * Result of a processed payment.
+ * Result of a processed payment. Display data only: confirm the payment on your
+ * server (signed webhook or `GET /payments/{id}`) before fulfillment.
  */
 export interface PaymentResult {
-  /** Unique transaction identifier. */
+  /** Unique transaction identifier (the MONEI payment id). */
   transactionId: string;
   /** Whether the payment was approved. */
   success: boolean;
@@ -55,6 +56,36 @@ export interface PaymentResult {
   cardBrand: string;
   /** Masked card number (e.g. "****1234"). */
   maskedCardNumber: string;
+  /** Merchant order reference. */
+  orderId?: string;
+  /** ISO 4217 currency code (e.g. "EUR"). */
+  currency?: string;
+  /** MONEI payment status (e.g. "SUCCEEDED", "AUTHORIZED", "FAILED"). */
+  status?: string;
+  /** MONEI status code (e.g. "E000", "E301"). */
+  statusCode?: string;
+  /** Human readable status (e.g. "Insufficient funds"). */
+  statusMessage?: string;
+  /** Issuer authorization code. Approved payments only. */
+  authorizationCode?: string;
+  /** Last 4 digits of the card. */
+  last4?: string;
+  /** Card type: "credit", "debit" or "prepaid". */
+  cardType?: string;
+  /** ISO 3166-1 alpha-2 country of the card issuer. */
+  cardCountry?: string;
+}
+
+/**
+ * Error thrown by `acceptPayment`.
+ */
+export interface MoneiPayError extends Error {
+  code: MoneiPayErrorCode;
+  /**
+   * The declined payment. Set only on `PAYMENT_FAILED` when MONEI Pay sends a
+   * payment id. `success` is `false`. Display data only.
+   */
+  payment?: PaymentResult;
 }
 
 /**
