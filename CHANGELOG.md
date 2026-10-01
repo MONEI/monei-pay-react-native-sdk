@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.3.0](https://github.com/MONEI/monei-pay-react-native-sdk/compare/v1.2.1...v1.3.0) (2026-10-01)
+
+
+### Features
+
+* add status, decline and card fields to PaymentResult ([#3](https://github.com/MONEI/monei-pay-react-native-sdk/issues/3)) ([9057d96](https://github.com/MONEI/monei-pay-react-native-sdk/commit/9057d966586b33e3ea7e99da6219589d75ebdf7a))
+
 ## [1.2.1](https://github.com/MONEI/monei-pay-react-native-sdk/compare/v1.2.0...v1.2.1) (2026-09-29)
 
 # [1.2.0](https://github.com/MONEI/monei-pay-react-native-sdk/compare/v1.1.0...v1.2.0) (2026-06-09)
